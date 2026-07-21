@@ -43,6 +43,8 @@ def fused_sigmoid_gating_delta_rule_update_npu_kernel(
     USE_QK_L2NORM_IN_KERNEL: tl.constexpr,
     IS_VARLEN: tl.constexpr,
     IS_KDA: tl.constexpr,
+    HAS_LOWER_BOUND: tl.constexpr,
+    LOWER_BOUND: tl.constexpr,
 ):
     """
     Fused kernel that combines sigmoid gating computation with recurrent delta rule update.
@@ -96,7 +98,10 @@ def fused_sigmoid_gating_delta_rule_update_npu_kernel(
             # Compute sigmoid gating
             # Load gating parameters
             b_A_log = tl.load(p_A_log).to(tl.float32)
-            b_a = tl.load(p_a + i * HV).to(tl.float32)
+            if IS_KDA:
+                b_a = tl.load(p_a + i * HV * K).to(tl.float32)
+            else:
+                b_a = tl.load(p_a + i * HV).to(tl.float32)
             b_dt_bias = tl.load(p_dt_bias).to(tl.float32)
 
             b_h = tl.zeros([BK, BV], dtype=tl.float32)
@@ -112,16 +117,19 @@ def fused_sigmoid_gating_delta_rule_update_npu_kernel(
                     )  # 128 * 64 * int32
                     b_h = tl.load(p_h0, mask=mask_h).to(tl.float32)
 
-            # Compute g = -exp(A_log) * softplus(a + dt_bias)
             x = b_a + b_dt_bias
-            beta_x = softplus_beta * x
-            # Apply softplus with numerical stability
-            softplus_x = tl.where(
-                beta_x <= softplus_threshold,
-                (1.0 / softplus_beta) * tl.log(1.0 + tl.exp(beta_x)),
-                x,
-            )
-            b_g = -tl.exp(b_A_log) * softplus_x
+            exp_A = tl.exp(b_A_log)
+            if HAS_LOWER_BOUND:
+                b_g = LOWER_BOUND / (1.0 + tl.exp(-(exp_A * x)))
+            else:
+                beta_x = softplus_beta * x
+                # Apply softplus with numerical stability.
+                softplus_x = tl.where(
+                    beta_x <= softplus_threshold,
+                    (1.0 / softplus_beta) * tl.log(1.0 + tl.exp(beta_x)),
+                    x,
+                )
+                b_g = -exp_A * softplus_x
 
             # Compute beta = sigmoid(b)
             b_beta = 1.0 / (1.0 + tl.exp(-b_b))
@@ -183,6 +191,7 @@ def fused_sigmoid_gating_delta_rule_update_npu(
     use_qk_l2norm_in_kernel: bool = False,
     cu_seqlens: Optional[torch.Tensor] = None,
     is_kda: bool = False,
+    lower_bound: Optional[float] = None,
 ):
     """
     Fused triton implementation of sigmoid gating delta rule update.
@@ -204,7 +213,14 @@ def fused_sigmoid_gating_delta_rule_update_npu(
         assert scale > 0, "scale must be positive"
 
     o = q.new_empty(NK, *v.shape)
+    kernel_state_source = initial_state_source
+    if is_kda and initial_state_source is not None:
+        # SGLang stores KDA temporal state as [slot, H, V, K], while this
+        # recurrent kernel computes h as [H, K, V]. Keep the public pool layout
+        # consistent with the CUDA/FlashInfer KDA path and bridge locally.
+        kernel_state_source = initial_state_source.transpose(-1, -2).contiguous()
     BHV = 2
+    assert HV % BHV == 0, "HV must be divisible by BHV"
     NHV = HV // BHV
     grid = (NV, N, NHV)
 
@@ -219,7 +235,7 @@ def fused_sigmoid_gating_delta_rule_update_npu(
         v=v,
         b=b,
         o=o,
-        h0_source=initial_state_source,
+        h0_source=kernel_state_source,
         h0_indices=initial_state_indices,
         cu_seqlens=cu_seqlens,
         scale=scale,
@@ -237,6 +253,10 @@ def fused_sigmoid_gating_delta_rule_update_npu(
         num_stages=num_stages,
         multibuffer=False,
         IS_KDA=is_kda,
+        HAS_LOWER_BOUND=lower_bound is not None,
+        LOWER_BOUND=0.0 if lower_bound is None else float(lower_bound),
     )
+    if is_kda and initial_state_source is not None:
+        initial_state_source.copy_(kernel_state_source.transpose(-1, -2))
     o = o.squeeze(0)
     return o
