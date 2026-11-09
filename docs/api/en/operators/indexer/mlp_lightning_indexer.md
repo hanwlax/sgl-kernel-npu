@@ -4,13 +4,13 @@
 
 | Implementation | arch22 | arch35 |
 | --- | --- | --- |
-| `auto` / `ascendc` | Supported implementation | Unsupported |
-| `torch_native` | Independent PyTorch reference | Unsupported |
+| `auto` / `ascendc` | Supported implementation | Enabled for validation |
+| `torch_native` | Independent PyTorch reference | Enabled for validation |
 
 This table describes implementation scope, not a new hardware validation result.
-In an arch22 Linux/CANN environment, run the root
+In a Linux/CANN environment, run the root
 `python3 setup.py --arch-version 2201 --ops mlp_lightning_indexer`, then install
-the generated wheel. `--ops all` on arch22 also includes this operator.
+the generated wheel. Use `--arch-version 3510` for Ascend 950. `--ops all` on arch22 also includes this operator.
 See the [build guide](../../../../../python/sgl_kernel_npu/README.md).
 
 ## Signature

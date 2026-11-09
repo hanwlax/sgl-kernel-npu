@@ -4,12 +4,12 @@
 
 | 实现 | arch22 | arch35 |
 | --- | --- | --- |
-| `auto` / `ascendc` | 支持实现 | 不支持 |
-| `torch_native` | 独立 PyTorch 参考实现 | 不支持 |
+| `auto` / `ascendc` | 支持实现 | 已开放验证 |
+| `torch_native` | 独立 PyTorch 参考实现 | 已开放验证 |
 
-此表表示实现范围，不表示本次新增的硬件验证结果。在 arch22 Linux/CANN 环境执行
+此表表示实现范围，不表示本次新增的硬件验证结果。在 Linux/CANN 环境执行
 根目录 `python3 setup.py --arch-version 2201 --ops mlp_lightning_indexer`，然后安装
-生成的 wheel。arch22 的 `--ops all` 也包含此算子。
+生成的 wheel。验证 Ascend 950 时使用 `--arch-version 3510`。两个架构的 `--ops all` 也包含此算子。
 安装步骤见[构建指南](../../../../../python/sgl_kernel_npu/README.md)。
 
 ## 函数原型
