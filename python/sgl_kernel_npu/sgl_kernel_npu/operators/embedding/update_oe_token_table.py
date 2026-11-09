@@ -9,12 +9,14 @@ _torch_native_fn = None
 
 
 @register_impl(
-    "embedding.update_oe_token_table", "auto", supported_generations={Generation.ARCH22}
+    "embedding.update_oe_token_table",
+    "auto",
+    supported_generations={Generation.ARCH22, Generation.ARCH35},
 )
 @register_impl(
     "embedding.update_oe_token_table",
     "ascendc",
-    supported_generations={Generation.ARCH22},
+    supported_generations={Generation.ARCH22, Generation.ARCH35},
 )
 def _ascendc_impl(*args, **kwargs):
     return torch.ops.npu.update_oe_token_table(*args, **kwargs)
@@ -23,7 +25,7 @@ def _ascendc_impl(*args, **kwargs):
 @register_impl(
     "embedding.update_oe_token_table",
     "torch_native",
-    supported_generations={Generation.ARCH22},
+    supported_generations={Generation.ARCH22, Generation.ARCH35},
 )
 def _torch_native_impl(*args, **kwargs):
     global _torch_native_fn

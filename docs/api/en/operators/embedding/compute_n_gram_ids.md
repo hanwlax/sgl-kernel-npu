@@ -4,8 +4,8 @@
 
 | Implementation | arch22 | arch35 |
 | --- | --- | --- |
-| `auto` / `ascendc` | Supported implementation | Unsupported |
-| `torch_native` | Independent reference | Unsupported |
+| `auto` / `ascendc` | Supported implementation | Enabled for validation |
+| `torch_native` | Independent reference | Enabled for validation |
 
 See the [build and installation guide](../../../../../python/sgl_kernel_npu/README.md).
 This table describes implementation scope, not a new hardware validation result.
@@ -81,7 +81,7 @@ repository's Torch adapter, calling `aclnnSglComputeNGramIdsGetWorkspaceSize` an
 `aclnnSglComputeNGramIds`. CANN manages tiling and kernel dispatch; the handwritten
 tiling cache from the old direct-launch path is no longer used. The public API
 adds no input normalization or new input checks. Use the root REFACTOR build;
-`--ops all` includes this operator on arch22.
+`--ops all` includes this operator on both architectures.
 
 ## torch_native backend
 

@@ -3,7 +3,7 @@ sgl_register_operator(
     EXECUTION_UNIT AICORE
     CANN_OP_TYPE SglUpdateOeTokenTable
     TORCH_ADAPTER torch_adapter.cpp
-    SUPPORTED_ARCHS 2201
+    SUPPORTED_ARCHS 2201 3510
     OPDEF_SOURCES op_host/update_oe_token_table.cpp
     INFER_SOURCES op_host/update_oe_token_table.cpp
     TILING_SOURCES op_host/update_oe_token_table.cpp

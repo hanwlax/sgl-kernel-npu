@@ -4,8 +4,8 @@
 
 | 实现 | arch22 | arch35 |
 | --- | --- | --- |
-| `auto` / `ascendc` | 支持实现 | 不支持 |
-| `torch_native` | 独立参考实现 | 不支持 |
+| `auto` / `ascendc` | 支持实现 | 已开放验证 |
+| `torch_native` | 独立参考实现 | 已开放验证 |
 
 构建和安装步骤见[公共构建指南](../../../../../python/sgl_kernel_npu/README.md)。
 此表表示实现范围，不表示本次新增的硬件验证结果。
@@ -69,7 +69,7 @@ tokens 一致的请求长度。这些是已有调用约定，不是公共包装�
 `aclnnSglUpdateOeTokenTableGetWorkspaceSize` 和 `aclnnSglUpdateOeTokenTable`。将原表传入
 ACLNN 的输出参数，并返回同一表；Torch schema 以同一 `Tensor(a!)` alias 标记
 `oe_token_table` 和返回值。CANN 管理 tiling 与 kernel 调度，不再使用旧手写 tiling cache。
-使用根目录 REFACTOR 构建；arch22 的 `--ops all` 包含此算子。公共包装层不增加
+使用根目录 REFACTOR 构建；两个架构的 `--ops all` 包含此算子。公共包装层不增加
 输入归一化或校验。
 
 ## torch_native 后端

@@ -4,8 +4,8 @@
 
 | Implementation | arch22 | arch35 |
 | --- | --- | --- |
-| `auto` / `ascendc` | Supported implementation | Unsupported |
-| `torch_native` | Independent reference | Unsupported |
+| `auto` / `ascendc` | Supported implementation | Enabled for validation |
+| `torch_native` | Independent reference | Enabled for validation |
 
 See the [build and installation guide](../../../../../python/sgl_kernel_npu/README.md).
 This table describes implementation scope, not a new hardware validation result.
@@ -74,7 +74,7 @@ repository's Torch adapter, calling `aclnnSglUpdateOeTokenTableGetWorkspaceSize`
 returned by the adapter; its Torch schema marks `oe_token_table` and the return
 value with the same `Tensor(a!)` alias. CANN manages tiling and kernel
 dispatch; the old handwritten tiling cache is no longer used. Use the root
-REFACTOR build; `--ops all` includes this operator on arch22. The public wrapper
+REFACTOR build; `--ops all` includes this operator on both architectures. The public wrapper
 adds no input normalization or validation.
 
 ## torch_native backend

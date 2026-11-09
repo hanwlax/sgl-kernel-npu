@@ -409,6 +409,14 @@ Supporting Software
 - pybind11 (install via `pip install pybind11`)
 
 ## Legacy build: quick start
+
+To bundle the LongCat2 OE operators and MLP lightning indexer into the
+Ascend 950 legacy wheel for validation, run:
+
+```bash
+SGL_KERNEL_NPU_ENABLE_LONGCAT2=1 bash build.sh -a kernels Ascend950
+```
+
 ### Compile and Run
 1. Prepare the CANN environment variables (modify according to the installation path)
 ```bash
